@@ -19,25 +19,21 @@ def run_task(module_args, module_path, n_jobs=1):
 def main():
     parser = argparse.ArgumentParser(description='Admin Checker')
     parser.add_argument('--path', type=str, required=True)
-    parser.add_argument('--probe_radius', type=float, default=0.05)
-    parser.add_argument('--space_sigma' , type=float, default=0.33)
-
-    parser.add_argument('--sigma_min', type=float, default=0.36)
-    parser.add_argument('--sigma_max', type=float, default=0.64)
-    parser.add_argument('--n_sigmas' , type=int,   default=5)
     parser.add_argument('--n_jobs'   , type=int,   default=8)
-
+    parser.add_argument('--n_start', type=int, required=True)
+    parser.add_argument('--n_end', type=int, required=True)
     args = parser.parse_args()
     
     molecule_files = ["".join((args.path, f)) for f in os.listdir(args.path) if os.path.isfile("".join((args.path, f)))]
     molecule_files = filter(lambda x: x.split(".")[-1] == "wrl", molecule_files)
+    molecule_files = sorted(molecule_files)[args.n_start:args.n_end]
 
     with open("parallels_tmp", "w") as f:
         for mf in molecule_files:
-            tmp = "--filename {} --probe_radius {} --space_sigma {} --sigma_min {} --sigma_max {} --n_sigmas {}".format(mf, args.probe_radius, args.space_sigma, args.sigma_min, args.sigma_max, args.n_sigmas) 
+            tmp = "-f {}".format(mf) 
             f.write(tmp + "\n")
 
-    run_task("./parallels_tmp", "./find_singular_points.py", n_jobs=args.n_jobs)
+    run_task("./parallels_tmp", "./find_sp.py", n_jobs=args.n_jobs)
 
     #os.remove("./parallels_tmp")
     
